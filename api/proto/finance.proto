@@ -100,6 +100,7 @@ service AuditTrailService {
 // ---------------- Message Definitions ----------------
 
 // Invoice message
+
 message Invoice {
     string id = 1;
     string invoice_number = 2;
@@ -140,6 +141,7 @@ message Invoice {
 }
 
 // InvoiceItem message
+
 message InvoiceItem {
     string id = 1;
     string invoice_id = 2;
@@ -152,6 +154,7 @@ message InvoiceItem {
 }
 
 // Request and Response messages
+
 message CreateInvoiceRequest {
     Invoice invoice = 1;
 }
@@ -165,6 +168,7 @@ message DeleteInvoiceResponse { string message = 1; }
 message SearchInvoicesRequest { string query = 1; int32 page = 2; int32 page_size = 3; }
 
 // Credit/Debit Note
+
 message CreditDebitNote {
     string note_id = 1;
     string invoice_id = 2;
@@ -181,6 +185,7 @@ message DeleteCreditDebitNoteRequest { string id = 1; }
 message DeleteCreditDebitNoteResponse { string message = 1; }
 
 // Payment Messages
+
 message PaymentDue {
     string payment_due_id = 1;
     string invoice_id = 2;
@@ -195,6 +200,7 @@ message ListPaymentDueRequest { int32 page = 1; int32 page_size = 2; }
 message ListPaymentDueResponse { repeated PaymentDue dues = 1; }
 
 // Bank Reconciliation
+
 message ReconcileTransactionRequest {
     string transaction_id = 1;
     double amount = 2;
@@ -206,6 +212,7 @@ message ReconciliationResponse {
 }
 
 // Ledger
+
 message LedgerEntry {
     string entry_id = 1;
     string description = 2;
@@ -220,6 +227,7 @@ message ListLedgerEntriesRequest { int32 page = 1; int32 page_size = 2; }
 message ListLedgerEntriesResponse { repeated LedgerEntry entries = 1; }
 
 // Financial Reporting
+
 message ReportRequest {
     google.protobuf.Timestamp start_date = 1;
     google.protobuf.Timestamp end_date = 2;
@@ -239,6 +247,7 @@ message ComplianceReportRequest { ReportRequest period = 1; }
 message ComplianceReport { string details = 1; }
 
 // Budget
+
 message Budget {
     string budget_id = 1;
     string name = 2;
@@ -251,6 +260,7 @@ message ListBudgetsRequest { int32 page = 1; int32 page_size = 2; }
 message ListBudgetsResponse { repeated Budget budgets = 1; }
 
 // Budget Allocation
+
 message BudgetAllocation {
     string allocation_id = 1;
     string budget_id = 2;
@@ -273,6 +283,7 @@ message BudgetComparisonResponse {
 }
 
 // Expense
+
 message Expense {
     string expense_id = 1;
     string category = 2; 
@@ -286,6 +297,7 @@ message ListExpensesRequest { int32 page = 1; int32 page_size = 2; }
 message ListExpensesResponse { repeated Expense expenses = 1; }
 
 // Cost Accounting
+
 message CostCenter {
     string cost_center_id = 1;
     string name = 2;
@@ -299,6 +311,7 @@ message AllocateCostRequest { string cost_center_id = 1; double amount = 2; }
 message CostAllocationResponse { string message = 1; }
 
 // Accruals
+
 message Accrual {
     string accrual_id = 1;
     string description = 2;
@@ -311,10 +324,12 @@ message ListAccrualsRequest { int32 page = 1; int32 page_size = 2; }
 message ListAccrualsResponse { repeated Accrual accruals = 1; }
 
 // Consolidation
+
 message ConsolidationRequest { repeated string entity_ids = 1; }
 message ConsolidationResponse { string report = 1; }
 
 // Treasury
+
 message CashFlowForecastRequest {
     google.protobuf.Timestamp start_date = 1;
     google.protobuf.Timestamp end_date = 2;
@@ -322,6 +337,7 @@ message CashFlowForecastRequest {
 message CashFlowForecastResponse { string forecast_details = 1; }
 
 // Audit Trails
+
 message AuditEvent {
     string event_id = 1;
     string user_id = 2;
@@ -335,4 +351,5 @@ message ListAuditEventsRequest { int32 page = 1; int32 page_size = 2; }
 message ListAuditEventsResponse { repeated AuditEvent events = 1; }
 
 // General Response Messages
+
 message DeleteResponse { string message = 1; }
