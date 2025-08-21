@@ -1,0 +1,338 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package finance;
+
+option go_package = "/finance_pb";
+
+// --------------- Invoice & Tax Services ----------------
+service InvoiceService {
+    rpc CreateInvoice(CreateInvoiceRequest) returns (InvoiceResponse);
+    rpc GetInvoiceByID(GetInvoiceByIDRequest) returns (InvoiceResponse);
+    rpc ListInvoices(ListInvoicesRequest) returns (ListInvoicesResponse);
+    rpc UpdateInvoice(UpdateInvoiceRequest) returns (InvoiceResponse);
+    rpc DeleteInvoice(DeleteInvoiceRequest) returns (DeleteInvoiceResponse);
+    rpc SearchInvoices(SearchInvoicesRequest) returns (ListInvoicesResponse);
+}
+
+// --------------- Credit/Debit Note Services ----------------
+service CreditDebitNoteService {
+    rpc CreateCreditDebitNote(CreateCreditDebitNoteRequest) returns (CreditDebitNoteResponse);
+    rpc GetCreditDebitNoteByID(GetCreditDebitNoteByIDRequest) returns (CreditDebitNoteResponse);
+    rpc ListCreditDebitNotes(ListCreditDebitNotesRequest) returns (ListCreditDebitNotesResponse);
+    rpc UpdateCreditDebitNote(UpdateCreditDebitNoteRequest) returns (CreditDebitNoteResponse);
+    rpc DeleteCreditDebitNote(DeleteCreditDebitNoteRequest) returns (DeleteCreditDebitNoteResponse);
+}
+
+// --------------- Payment & Bank Reconciliation Services ----------------
+service PaymentService {
+    rpc AddPaymentDue(AddPaymentDueRequest) returns (PaymentDueResponse);
+    rpc MarkPaymentAsPaid(MarkPaymentAsPaidRequest) returns (PaymentDueResponse);
+    rpc ListPaymentDues(ListPaymentDueRequest) returns (ListPaymentDueResponse);
+}
+
+service BankReconciliationService {
+    rpc ReconcileTransaction(ReconcileTransactionRequest) returns (ReconciliationResponse);
+}
+
+// --------------- Ledger & Financial Reporting Services ----------------
+service LedgerService {
+    rpc AddLedgerEntry(AddLedgerEntryRequest) returns (LedgerResponse);
+    rpc ListLedgerEntries(ListLedgerEntriesRequest) returns (ListLedgerEntriesResponse);
+}
+
+service FinancialReportService {
+    rpc GenerateProfitLossReport(ReportRequest) returns (ProfitLossReport);
+    rpc GenerateBalanceSheetReport(ReportRequest) returns (BalanceSheetReport);
+    rpc GenerateTrialBalanceReport(ReportRequest) returns (TrialBalanceReport);
+    rpc GenerateComplianceReport(ComplianceReportRequest) returns (ComplianceReport);
+}
+
+// --------------- Budgeting & Allocation Services ----------------
+service BudgetService {
+    rpc CreateBudget(CreateBudgetRequest) returns (BudgetResponse);
+    rpc ListBudgets(ListBudgetsRequest) returns (ListBudgetsResponse);
+}
+
+service BudgetAllocationService {
+    rpc AllocateBudget(AllocateBudgetRequest) returns (BudgetAllocationResponse);
+    rpc ListBudgetAllocations(ListBudgetAllocationsRequest) returns (ListBudgetAllocationsResponse);
+}
+
+service BudgetComparisonService {
+    rpc GetBudgetComparisonReport(BudgetComparisonRequest) returns (BudgetComparisonResponse);
+}
+
+// --------------- Expense & Cost Accounting Services ----------------
+service ExpenseService {
+    rpc CreateExpense(CreateExpenseRequest) returns (ExpenseResponse);
+    rpc ListExpenses(ListExpensesRequest) returns (ListExpensesResponse);
+}
+
+service CostAccountingService {
+    rpc CreateCostCenter(CreateCostCenterRequest) returns (CostCenterResponse);
+    rpc ListCostCenters(ListCostCentersRequest) returns (ListCostCentersResponse);
+    rpc AllocateCost(AllocateCostRequest) returns (CostAllocationResponse);
+}
+
+// --------------- Accruals & Allocation Automation ----------------
+service AccrualService {
+    rpc CreateAccrual(CreateAccrualRequest) returns (AccrualResponse);
+    rpc ListAccruals(ListAccrualsRequest) returns (ListAccrualsResponse);
+}
+
+// --------------- Consolidation & Treasury ----------------
+service ConsolidationService {
+    rpc ConsolidateEntities(ConsolidationRequest) returns (ConsolidationResponse);
+}
+
+service TreasuryService {
+    rpc GenerateCashFlowForecast(CashFlowForecastRequest) returns (CashFlowForecastResponse);
+}
+
+// --------------- Audit Trail Services ----------------
+service AuditTrailService {
+    rpc RecordAuditEvent(AuditEventRequest) returns (AuditEventResponse);
+    rpc ListAuditEvents(ListAuditEventsRequest) returns (ListAuditEventsResponse);
+}
+
+// ---------------- Message Definitions ----------------
+
+// Invoice message
+message Invoice {
+    string id = 1;
+    string invoice_number = 2;
+    string invoice_date = 3;
+    string type = 4; // "sales", "proforma", "challan", "purchase"
+    optional string vendor_id = 5;
+    optional string customer_id = 6;
+    string organization_id = 7;
+    repeated InvoiceItem items = 8;
+
+    string due_date = 9;
+    string delivery_date = 10;
+    string po_number = 11;
+    string eway_number = 12;
+    string status = 13; 
+    string payment_type = 14;
+    string cheque_number = 15;
+    string challan_number = 16;
+    string challan_date = 17;
+    string reverse_charge = 18;
+    string lr_number = 19;
+    string transporter_name = 20;
+    string transporter_id = 21;
+    string vehicle_number = 22;
+    string against_invoice_number = 23;
+    string against_invoice_date = 24;
+
+    double total_amount = 25;
+    float gst_rate = 26;
+    double cgst = 27;
+    double sgst = 28;
+    double igst = 29;
+
+    string created_at = 30;
+    string updated_at = 31;
+
+    string currency = 32; // Multi-currency support
+}
+
+// InvoiceItem message
+message InvoiceItem {
+    string id = 1;
+    string invoice_id = 2;
+    string name = 3;
+    string description = 4;
+    int32 hsn = 5;
+    int32 quantity = 6;
+    double price = 7;
+    double total = 8;
+}
+
+// Request and Response messages
+message CreateInvoiceRequest {
+    Invoice invoice = 1;
+}
+message GetInvoiceByIDRequest { string id = 1; }
+message ListInvoicesRequest { int32 page = 1; int32 page_size = 2; }
+message ListInvoicesResponse { repeated Invoice invoices = 1; }
+message UpdateInvoiceRequest { Invoice invoice = 1; }
+message InvoiceResponse { Invoice invoice = 1; }
+message DeleteInvoiceRequest { string id = 1; }
+message DeleteInvoiceResponse { string message = 1; }
+message SearchInvoicesRequest { string query = 1; int32 page = 2; int32 page_size = 3; }
+
+// Credit/Debit Note
+message CreditDebitNote {
+    string note_id = 1;
+    string invoice_id = 2;
+    string type = 3; // "credit" or "debit"
+    double amount = 4;
+}
+message CreateCreditDebitNoteRequest { CreditDebitNote note = 1; }
+message CreditDebitNoteResponse { CreditDebitNote note = 1; }
+message GetCreditDebitNoteByIDRequest { string id = 1; }
+message ListCreditDebitNotesRequest { int32 page = 1; int32 page_size = 2; }
+message ListCreditDebitNotesResponse { repeated CreditDebitNote notes = 1; }
+message UpdateCreditDebitNoteRequest { CreditDebitNote note = 1; }
+message DeleteCreditDebitNoteRequest { string id = 1; }
+message DeleteCreditDebitNoteResponse { string message = 1; }
+
+// Payment Messages
+message PaymentDue {
+    string payment_due_id = 1;
+    string invoice_id = 2;
+    double amount_due = 3;
+    google.protobuf.Timestamp due_date = 4;
+    string status = 5; 
+}
+message AddPaymentDueRequest { PaymentDue due = 1; }
+message PaymentDueResponse { PaymentDue due = 1; }
+message MarkPaymentAsPaidRequest { string id = 1; }
+message ListPaymentDueRequest { int32 page = 1; int32 page_size = 2; }
+message ListPaymentDueResponse { repeated PaymentDue dues = 1; }
+
+// Bank Reconciliation
+message ReconcileTransactionRequest {
+    string transaction_id = 1;
+    double amount = 2;
+    google.protobuf.Timestamp transaction_date = 3;
+}
+message ReconciliationResponse {
+    bool matched = 1;
+    string status = 2; 
+}
+
+// Ledger
+message LedgerEntry {
+    string entry_id = 1;
+    string description = 2;
+    double debit = 3;
+    double credit = 4;
+    google.protobuf.Timestamp transaction_date = 5;
+    string cost_center_id = 6; 
+}
+message AddLedgerEntryRequest { LedgerEntry entry = 1; }
+message LedgerResponse { LedgerEntry entry = 1; }
+message ListLedgerEntriesRequest { int32 page = 1; int32 page_size = 2; }
+message ListLedgerEntriesResponse { repeated LedgerEntry entries = 1; }
+
+// Financial Reporting
+message ReportRequest {
+    google.protobuf.Timestamp start_date = 1;
+    google.protobuf.Timestamp end_date = 2;
+}
+message ProfitLossReport {
+    double total_revenue = 1;
+    double total_expenses = 2;
+    double net_profit = 3;
+}
+message BalanceSheetReport {
+    double total_assets = 1;
+    double total_liabilities = 2;
+    double net_worth = 3;
+}
+message TrialBalanceReport { repeated LedgerEntry entries = 1; }
+message ComplianceReportRequest { ReportRequest period = 1; }
+message ComplianceReport { string details = 1; }
+
+// Budget
+message Budget {
+    string budget_id = 1;
+    string name = 2;
+    double total_amount = 3;
+    string status = 4; 
+}
+message BudgetResponse { Budget budget = 1; }
+message CreateBudgetRequest { Budget budget = 1; }
+message ListBudgetsRequest { int32 page = 1; int32 page_size = 2; }
+message ListBudgetsResponse { repeated Budget budgets = 1; }
+
+// Budget Allocation
+message BudgetAllocation {
+    string allocation_id = 1;
+    string budget_id = 2;
+    string department_id = 3;
+    double allocated_amount = 4;
+    double spent_amount = 5;
+    double remaining_amount = 6;
+}
+message AllocateBudgetRequest { BudgetAllocation allocation = 1; }
+message BudgetAllocationResponse { BudgetAllocation allocation = 1; }
+message ListBudgetAllocationsRequest { int32 page = 1; int32 page_size = 2; }
+message ListBudgetAllocationsResponse { repeated BudgetAllocation allocations = 1; }
+message BudgetComparisonRequest { string budget_id = 1; }
+message BudgetComparisonResponse {
+    string budget_id = 1;
+    double total_budget = 2;
+    double total_allocated = 3;
+    double total_spent = 4;
+    double remaining_budget = 5;
+}
+
+// Expense
+message Expense {
+    string expense_id = 1;
+    string category = 2; 
+    double amount = 3;
+    string currency = 4;
+    google.protobuf.Timestamp expense_date = 5;
+}
+message CreateExpenseRequest { Expense expense = 1; }
+message ExpenseResponse { Expense expense = 1; }
+message ListExpensesRequest { int32 page = 1; int32 page_size = 2; }
+message ListExpensesResponse { repeated Expense expenses = 1; }
+
+// Cost Accounting
+message CostCenter {
+    string cost_center_id = 1;
+    string name = 2;
+    string description = 3;
+}
+message CreateCostCenterRequest { CostCenter center = 1; }
+message CostCenterResponse { CostCenter center = 1; }
+message ListCostCentersRequest { int32 page = 1; int32 page_size = 2; }
+message ListCostCentersResponse { repeated CostCenter centers = 1; }
+message AllocateCostRequest { string cost_center_id = 1; double amount = 2; }
+message CostAllocationResponse { string message = 1; }
+
+// Accruals
+message Accrual {
+    string accrual_id = 1;
+    string description = 2;
+    double amount = 3;
+    google.protobuf.Timestamp accrual_date = 4;
+}
+message CreateAccrualRequest { Accrual accrual = 1; }
+message AccrualResponse { Accrual accrual = 1; }
+message ListAccrualsRequest { int32 page = 1; int32 page_size = 2; }
+message ListAccrualsResponse { repeated Accrual accruals = 1; }
+
+// Consolidation
+message ConsolidationRequest { repeated string entity_ids = 1; }
+message ConsolidationResponse { string report = 1; }
+
+// Treasury
+message CashFlowForecastRequest {
+    google.protobuf.Timestamp start_date = 1;
+    google.protobuf.Timestamp end_date = 2;
+}
+message CashFlowForecastResponse { string forecast_details = 1; }
+
+// Audit Trails
+message AuditEvent {
+    string event_id = 1;
+    string user_id = 2;
+    string action = 3;
+    google.protobuf.Timestamp timestamp = 4;
+    string details = 5;
+}
+message AuditEventRequest { AuditEvent event = 1; }
+message AuditEventResponse { AuditEvent event = 1; }
+message ListAuditEventsRequest { int32 page = 1; int32 page_size = 2; }
+message ListAuditEventsResponse { repeated AuditEvent events = 1; }
+
+// General Response Messages
+message DeleteResponse { string message = 1; }
