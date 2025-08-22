@@ -24,7 +24,7 @@ type AuditFields struct {
 
 type ExternalRef struct {
 	System string
-	ID     string
+	RefId    string
 }
 
 type PartyKind int

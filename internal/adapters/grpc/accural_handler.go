@@ -8,16 +8,16 @@ import (
 
 	pb "github.com/ShristiRnr/Finance/api/proto/financepb"
 	"github.com/ShristiRnr/Finance/internal/core/domain/finance"
-	
+	"github.com/ShristiRnr/Finance/internal/core/services"
 )
 
 type AccrualHandler struct {
-	repo finance.AccrualRepository
+	service *services.AccrualService
 	pb.UnimplementedAccrualServiceServer
 }
 
-func NewAccrualHandler(repo finance.AccrualRepository) *AccrualHandler {
-	return &AccrualHandler{repo: repo}
+func NewAccrualHandler(service *services.AccrualService) *AccrualHandler {
+	return &AccrualHandler{service: service}
 }
 
 func (h *AccrualHandler) CreateAccrual(ctx context.Context, req *pb.CreateAccrualRequest) (*pb.Accrual, error) {
@@ -26,10 +26,10 @@ func (h *AccrualHandler) CreateAccrual(ctx context.Context, req *pb.CreateAccrua
 		Description: req.Accrual.Description,
 		Amount:      MoneyFromProto(req.Accrual.Amount),
 		AccrualDate: req.Accrual.AccrualDate.AsTime(),
-		// TODO: map Audit & ExternalRefs also
+		ExternalRefs: ExternalRefsFromProto(req.Accrual.ExternalRefs),
 	}
 
-	saved, err := h.repo.Save(domainAccrual)
+	saved, err := h.service.CreateAccrual(domainAccrual)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (h *AccrualHandler) CreateAccrual(ctx context.Context, req *pb.CreateAccrua
 }
 
 func (h *AccrualHandler) ListAccruals(ctx context.Context, req *pb.ListAccrualsRequest) (*pb.ListAccrualsResponse, error) {
-	list, err := h.repo.FindAll()
+	list, err := h.service.ListAccruals()
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (h *AccrualHandler) ListAccruals(ctx context.Context, req *pb.ListAccrualsR
 		pbAccruals = append(pbAccruals, &pb.Accrual{
 			Id:          a.ID,
 			Description: a.Description,
-			Amount:     MoneyToProto(a.Amount),
+			Amount:      MoneyToProto(a.Amount),
 			AccrualDate: timestamppb.New(a.AccrualDate),
 		})
 	}
@@ -63,31 +63,55 @@ func (h *AccrualHandler) ListAccruals(ctx context.Context, req *pb.ListAccrualsR
 	}, nil
 }
 
-// Convert proto Money → domain Money
+// --- Converters ---
 func MoneyFromProto(pm *pb.Money) finance.Money {
-    if pm == nil {
-        return finance.Money{}
-    }
+	if pm == nil {
+		return finance.Money{}
+	}
 
-    units := big.NewInt(pm.Units)                // Units = int64
-    nanos := big.NewInt(int64(pm.Nanos))        // Nanos = int32, cast to int64
+	units := big.NewInt(pm.Units)
+	nanos := big.NewInt(int64(pm.Nanos))
 
-    total := new(big.Int).Mul(units, big.NewInt(100)) // units → minor units
-    total.Add(total, new(big.Int).Div(nanos, big.NewInt(1e7)))
+	total := new(big.Int).Mul(units, big.NewInt(100))
+	total.Add(total, new(big.Int).Div(nanos, big.NewInt(1e7)))
 
-    return finance.Money{
-        Currency: pm.CurrencyCode,
-        Amount:   total.Int64(),
-    }
+	return finance.Money{
+		Currency: pm.CurrencyCode,
+		Amount:   total.Int64(),
+	}
 }
 
-// Convert domain Money → proto Money
 func MoneyToProto(m finance.Money) *pb.Money {
-    units := m.Amount / 100
-    nanos := (m.Amount % 100) * 1e7
-    return &pb.Money{
-        CurrencyCode: m.Currency,
-        Units:        units,
-        Nanos:        int32(nanos),
-    }
+	units := m.Amount / 100
+	nanos := (m.Amount % 100) * 1e7
+	return &pb.Money{
+		CurrencyCode: m.Currency,
+		Units:        units,
+		Nanos:        int32(nanos),
+	}
+}
+
+func ExternalRefsFromProto(p []*pb.ExternalRef) []finance.ExternalRef {
+	if p == nil {
+		return nil
+	}
+	var refs []finance.ExternalRef
+	for _, r := range p {
+		refs = append(refs, finance.ExternalRef{
+			System: r.System,
+			RefId:  r.RefId,
+		})
+	}
+	return refs
+}
+
+func ExternalRefsToProto(refs []finance.ExternalRef) []*pb.ExternalRef {
+	var pbRefs []*pb.ExternalRef
+	for _, r := range refs {
+		pbRefs = append(pbRefs, &pb.ExternalRef{
+			System: r.System,
+			RefId:  r.RefId,
+		})
+	}
+	return pbRefs
 }
