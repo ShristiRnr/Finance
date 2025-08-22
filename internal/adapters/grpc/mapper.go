@@ -1,10 +1,10 @@
-package mapper
+package grpc
 
 import (
     "math/big"
 
-    pb "github.com/ShristiRnr/Finance_module/api/proto/financepb"
-    "github.com/ShristiRnr/Finance_module/internal/core/domain/finance"
+    pb "github.com/ShristiRnr/Finance/api/proto/financepb"
+    "github.com/ShristiRnr/Finance/internal/core/domain/finance"
 )
 
 // Convert proto Money → domain Money

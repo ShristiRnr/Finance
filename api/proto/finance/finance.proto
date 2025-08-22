@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api/proto
 
-option go_package = option go_package = "github.com/ShristiRnr/Finance_module/api/proto/financepb;financepb";
+option go_package = option go_package = "github.com/ShristiRnr/Finance/api/proto/financepb;financepb";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/field_mask.proto";

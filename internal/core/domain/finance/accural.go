@@ -10,3 +10,9 @@ type Accrual struct {
 	Audit       AuditFields
 	ExternalRefs []ExternalRef
 }
+
+// AccrualRepository is the port (interface) for persistence.
+type AccrualRepository interface {
+	Save(accrual Accrual) (Accrual, error)
+	FindAll() ([]Accrual, error)
+}
