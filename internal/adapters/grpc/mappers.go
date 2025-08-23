@@ -189,3 +189,19 @@ func fromProtoMoney(m *pb.Money) finance.Money {
 	}
 }
 
+// Proto → Domain
+func mapProtoPeriodToDomain(p *pb.ReportPeriod) finance.ReportPeriod {
+    return finance.ReportPeriod{
+        StartDate: p.PeriodStart.AsTime(),
+        EndDate:   p.PeriodEnd.AsTime(),
+    }
+}
+
+// Domain → Proto
+func mapDomainPeriodToProto(p finance.ReportPeriod) *pb.ReportPeriod {
+    return &pb.ReportPeriod{
+        StartDate: timestamppb.New(p.StartDate),
+        EndDate:   timestamppb.New(p.EndDate),
+    }
+}
+
