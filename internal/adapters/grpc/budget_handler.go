@@ -51,39 +51,6 @@ func (h *BudgetHandler) ListBudgets(ctx context.Context, req *pb.ListBudgetsRequ
 	return resp, nil
 }
 
-func mapDomainBudgetToProto(b *finance.Budget) *pb.Budget {
-	return &pb.Budget{
-		Id:           b.ID,
-		Name:         b.Name,
-		TotalAmount:  b.Total,
-		Status:       b.Status,
-		Audit:        &pb.AuditFields{CreatedBy: b.Audit.CreatedBy, CreatedAt: b.Audit.CreatedAt},
-		ExternalRefs: mapDomainExternalRefsToProto(b.ExternalRefs),
-	}
-}
-
-func mapDomainExternalRefsToProto(refs []finance.ExternalRef) []*pb.ExternalRef {
-	protoRefs := make([]*pb.ExternalRef, len(refs))
-	for i, r := range refs {
-		protoRefs[i] = &pb.ExternalRef{
-			System: r.System,
-			RefId:     r.RefId,
-		}
-	}
-	return protoRefs
-}
-
-func mapProtoExternalRefsToDomain(refs []*pb.ExternalRef) []finance.ExternalRef {
-	domainRefs := make([]finance.ExternalRef, len(refs))
-	for i, r := range refs {
-		domainRefs[i] = finance.ExternalRef{
-			System: r.System,
-			RefId:     r.RefId,
-		}
-	}
-	return domainRefs
-}
-
 // -------------------- Budget Allocation Handler --------------------
 
 type BudgetAllocationHandler struct {
@@ -122,17 +89,6 @@ func (h *BudgetAllocationHandler) ListBudgetAllocations(ctx context.Context, req
 		resp.Allocations = append(resp.Allocations, mapDomainAllocationToProto(a))
 	}
 	return resp, nil
-}
-
-func mapDomainAllocationToProto(a *finance.BudgetAllocation) *pb.BudgetAllocation {
-	return &pb.BudgetAllocation{
-		Id:              a.ID,
-		BudgetId:        a.BudgetID,
-		DepartmentId:    a.DepartmentID,
-		AllocatedAmount: a.AllocatedAmount,
-		SpentAmount:     a.SpentAmount,
-		RemainingAmount: a.RemainingAmount,
-	}
 }
 
 // -------------------- Budget Comparison Handler --------------------

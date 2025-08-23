@@ -177,15 +177,11 @@ message Invoice {
   google.protobuf.Timestamp invoice_date = 4;
   google.protobuf.Timestamp due_date = 5;
   google.protobuf.Timestamp delivery_date = 6;
-
   PartyRef party = 7;
-
   string organization_id = 8;
-
   string po_number = 9;
   string eway_number_legacy = 10; // optional legacy field; prefer gst_docs
   string status_note = 11;
-
   InvoiceStatus status = 12;
 
   // Payments/logistics references
@@ -198,7 +194,6 @@ message Invoice {
   string vehicle_number = 19;
   string against_invoice_number = 20;
   google.protobuf.Timestamp against_invoice_date = 21;
-
   repeated InvoiceItem items = 22;
 
   // Totals
@@ -240,6 +235,7 @@ service InvoiceService {
   rpc ListInvoices(ListInvoicesRequest) returns (ListInvoicesResponse);
   rpc UpdateInvoice(UpdateInvoiceRequest) returns (Invoice);
   rpc DeleteInvoice(DeleteInvoiceRequest) returns (google.protobuf.Empty);
+  rpc SearchInvoices(SearchInvoicesRequest) returns (ListInvoicesResponse);
 }
 
 // =================== Credit/Debit Notes ===================
