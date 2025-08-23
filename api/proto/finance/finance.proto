@@ -548,14 +548,41 @@ message Accrual {
   repeated ExternalRef external_refs = 6;
 }
 
-message CreateAccrualRequest { RequestMetadata meta = 1; Accrual accrual = 2; }
-message ListAccrualsRequest { PageRequest page = 1; }
-message ListAccrualsResponse { repeated Accrual accruals = 1; PageResponse page = 2; }
+message CreateAccrualRequest {
+  RequestMetadata meta = 1;
+  Accrual accrual = 2;
+}
+
+message UpdateAccrualRequest {
+  RequestMetadata meta = 1;
+  Accrual accrual = 2;
+}
+
+message DeleteAccrualRequest {
+  string id = 1;
+}
+
+message GetAccrualByIdRequest {
+  string id = 1;
+}
+
+message ListAccrualsRequest {
+  PageRequest page = 1;
+}
+
+message ListAccrualsResponse {
+  repeated Accrual accruals = 1;
+  PageResponse page = 2;
+}
 
 service AccrualService {
   rpc CreateAccrual(CreateAccrualRequest) returns (Accrual);
   rpc ListAccruals(ListAccrualsRequest) returns (ListAccrualsResponse);
+  rpc GetAccrualById(GetAccrualByIdRequest) returns (Accrual);
+  rpc UpdateAccrual(UpdateAccrualRequest) returns (Accrual);
+  rpc DeleteAccrualById(DeleteAccrualRequest) returns (Accrual);
 }
+
 
 // =================== Compliance (Phase 2) ===================
 
@@ -597,11 +624,43 @@ message AuditEvent {
   string resource_id = 7;
 }
 
-message RecordAuditEventRequest { RequestMetadata meta = 1; AuditEvent event = 2; }
-message ListAuditEventsRequest { PageRequest page = 1; }
-message ListAuditEventsResponse { repeated AuditEvent events = 1; PageResponse page = 2; }
+message RecordAuditEventRequest {
+  RequestMetadata meta = 1;
+  AuditEvent event = 2;
+}
+
+message ListAuditEventsRequest {
+  PageRequest page = 1;
+}
+
+message ListAuditEventsResponse {
+  repeated AuditEvent events = 1;
+  PageResponse page = 2;
+}
+
+// Naya request messages
+message GetAuditEventByIdRequest {
+  string id = 1;
+}
+
+message FilterAuditEventsRequest {
+  string user_id = 1;           // optional
+  string action = 2;            // optional
+  string resource_type = 3;     // optional
+  string resource_id = 4;       // optional
+  google.protobuf.Timestamp from_date = 5;  // optional
+  google.protobuf.Timestamp to_date = 6;    // optional
+  PageRequest page = 7;         // optional pagination
+}
+
+message FilterAuditEventsResponse {
+  repeated AuditEvent events = 1;
+  PageResponse page = 2;
+}
 
 service AuditTrailService {
   rpc RecordAuditEvent(RecordAuditEventRequest) returns (AuditEvent);
   rpc ListAuditEvents(ListAuditEventsRequest) returns (ListAuditEventsResponse);
+  rpc GetAuditEventById(GetAuditEventByIdRequest) returns (AuditEvent);
+  rpc FilterAuditEvents(FilterAuditEventsRequest) returns (FilterAuditEventsResponse);
 }

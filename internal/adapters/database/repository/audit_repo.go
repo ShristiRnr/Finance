@@ -2,6 +2,7 @@ package repository
 
 import (
 	"sync"
+	"time"
 
 	"github.com/ShristiRnr/Finance/internal/core/domain/finance"
 )
@@ -20,6 +21,25 @@ func (r *InMemoryAuditRepo) Save(e finance.AuditEvent) (finance.AuditEvent, erro
 	defer r.mu.Unlock()
 	r.events = append(r.events, e)
 	return e, nil
+}
+
+func (r *InMemoryAuditRepo) FindAll() ([]finance.AuditEvent, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	list := make([]finance.AuditEvent, len(r.events))
+	copy(list, r.events)
+	return list, nil
+}
+
+func (r *InMemoryAuditRepo) FindByID(id string) (finance.AuditEvent, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	for _, e := range r.events {
+		if e.ID == id {
+			return e, nil
+		}
+	}
+	return finance.AuditEvent{}, nil
 }
 
 func (r *InMemoryAuditRepo) FindByResource(resourceType, resourceID string) ([]finance.AuditEvent, error) {
@@ -46,13 +66,30 @@ func (r *InMemoryAuditRepo) FindByUser(userID string) ([]finance.AuditEvent, err
 	return result, nil
 }
 
-func (r *InMemoryAuditRepo) FindAll() ([]finance.AuditEvent, error) {
+func (r *InMemoryAuditRepo) FilterEvents(userID, action, resourceType, resourceID string, from, to *time.Time) ([]finance.AuditEvent, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-
-	list := make([]finance.AuditEvent, 0, len(r.events))
-	for _, v := range r.events {
-		list = append(list, v)
+	var result []finance.AuditEvent
+	for _, e := range r.events {
+		if userID != "" && e.UserID != userID {
+			continue
+		}
+		if action != "" && e.Action != action {
+			continue
+		}
+		if resourceType != "" && e.ResourceType != resourceType {
+			continue
+		}
+		if resourceID != "" && e.ResourceID != resourceID {
+			continue
+		}
+		if from != nil && e.Timestamp.Before(*from) {
+			continue
+		}
+		if to != nil && e.Timestamp.After(*to) {
+			continue
+		}
+		result = append(result, e)
 	}
-	return list, nil
+	return result, nil
 }

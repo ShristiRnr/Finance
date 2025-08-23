@@ -21,25 +21,12 @@ func NewAccrualHandler(service *services.AccrualService) *AccrualHandler {
 }
 
 func (h *AccrualHandler) CreateAccrual(ctx context.Context, req *pb.CreateAccrualRequest) (*pb.Accrual, error) {
-	domainAccrual := finance.Accrual{
-		ID:          req.Accrual.Id,
-		Description: req.Accrual.Description,
-		Amount:      MoneyFromProto(req.Accrual.Amount),
-		AccrualDate: req.Accrual.AccrualDate.AsTime(),
-		ExternalRefs: ExternalRefsFromProto(req.Accrual.ExternalRefs),
-	}
-
-	saved, err := h.service.CreateAccrual(domainAccrual)
+	accrual := AccrualFromProto(req.Accrual)
+	saved, err := h.service.CreateAccrual(accrual)
 	if err != nil {
 		return nil, err
 	}
-
-	return &pb.Accrual{
-		Id:          saved.ID,
-		Description: saved.Description,
-		Amount:      MoneyToProto(saved.Amount),
-		AccrualDate: timestamppb.New(saved.AccrualDate),
-	}, nil
+	return AccrualToProto(saved), nil
 }
 
 func (h *AccrualHandler) ListAccruals(ctx context.Context, req *pb.ListAccrualsRequest) (*pb.ListAccrualsResponse, error) {
@@ -50,20 +37,71 @@ func (h *AccrualHandler) ListAccruals(ctx context.Context, req *pb.ListAccrualsR
 
 	var pbAccruals []*pb.Accrual
 	for _, a := range list {
-		pbAccruals = append(pbAccruals, &pb.Accrual{
-			Id:          a.ID,
-			Description: a.Description,
-			Amount:      MoneyToProto(a.Amount),
-			AccrualDate: timestamppb.New(a.AccrualDate),
-		})
+		pbAccruals = append(pbAccruals, AccrualToProto(a))
 	}
 
-	return &pb.ListAccrualsResponse{
-		Accruals: pbAccruals,
-	}, nil
+	return &pb.ListAccrualsResponse{Accruals: pbAccruals}, nil
+}
+
+func (h *AccrualHandler) GetAccrualById(ctx context.Context, req *pb.GetAccrualByIdRequest) (*pb.Accrual, error) {
+	a, err := h.service.GetAccrualByID(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return AccrualToProto(a), nil
+}
+
+func (h *AccrualHandler) UpdateAccrual(ctx context.Context, req *pb.UpdateAccrualRequest) (*pb.Accrual, error) {
+	a := AccrualFromProto(req.Accrual)
+	updated, err := h.service.UpdateAccrual(a)
+	if err != nil {
+		return nil, err
+	}
+	return AccrualToProto(updated), nil
+}
+
+func (h *AccrualHandler) DeleteAccrualById(ctx context.Context, req *pb.DeleteAccrualRequest) (*pb.Accrual, error) {
+	deleted, err := h.service.DeleteAccrualByID(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return AccrualToProto(deleted), nil
 }
 
 // --- Converters ---
+func AccrualFromProto(p *pb.Accrual) finance.Accrual {
+	if p == nil {
+		return finance.Accrual{}
+	}
+	return finance.Accrual{
+		ID:           p.Id,
+		Description:  p.Description,
+		Amount:       MoneyFromProto(p.Amount),
+		AccrualDate:  p.AccrualDate.AsTime(),
+		ExternalRefs: ExternalRefsFromProto(p.ExternalRefs),
+	}
+}
+
+func AccrualToProto(a finance.Accrual) *pb.Accrual {
+	return &pb.Accrual{
+		Id:           a.ID,
+		Description:  a.Description,
+		Amount:       MoneyToProto(a.Amount),
+		AccrualDate:  timestamppb.New(a.AccrualDate),
+		ExternalRefs: ExternalRefsToProto(a.ExternalRefs),
+	}
+}
+
+func MoneyToProto(m finance.Money) *pb.Money {
+	units := m.Amount / 100
+	nanos := (m.Amount % 100) * 1e7
+	return &pb.Money{
+		CurrencyCode: m.Currency,
+		Units:        units,
+		Nanos:        int32(nanos),
+	}
+}
+
 func MoneyFromProto(pm *pb.Money) finance.Money {
 	if pm == nil {
 		return finance.Money{}
@@ -78,16 +116,6 @@ func MoneyFromProto(pm *pb.Money) finance.Money {
 	return finance.Money{
 		Currency: pm.CurrencyCode,
 		Amount:   total.Int64(),
-	}
-}
-
-func MoneyToProto(m finance.Money) *pb.Money {
-	units := m.Amount / 100
-	nanos := (m.Amount % 100) * 1e7
-	return &pb.Money{
-		CurrencyCode: m.Currency,
-		Units:        units,
-		Nanos:        int32(nanos),
 	}
 }
 

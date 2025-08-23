@@ -18,9 +18,11 @@ type AuditEvent struct {
 // AuditEventRepository is the port (interface) for persistence.
 type AuditEventRepository interface {
 	Save(event AuditEvent) (AuditEvent, error)
-	FindAll() ([]AuditEvent, error)  
+	FindAll() ([]AuditEvent, error)
+	FindByID(id string) (AuditEvent, error)
 	FindByResource(resourceType, resourceID string) ([]AuditEvent, error)
 	FindByUser(userID string) ([]AuditEvent, error)
+	FilterEvents(userID, action, resourceType, resourceID string, from, to *time.Time) ([]AuditEvent, error)
 }
 
 func (e AuditEvent) Validate() error {
@@ -34,7 +36,7 @@ func (e AuditEvent) Validate() error {
 		return errors.New("timestamp cannot be zero")
 	}
 	if e.ResourceType == "" || e.ResourceID == "" {
-	 	return errors.New("resource type and id must be set")
+		return errors.New("resource type and id must be set")
 	}
 	return nil
 }
